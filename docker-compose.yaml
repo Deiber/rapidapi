@@ -1,0 +1,13 @@
+version: '3.7'
+x-rapiapi:
+  &default-rapidapi
+  image: 'rapidapi:latest'
+  environment:
+    - API_KEY=myapikey
+services:
+  rapidapi:
+    <<: *default-rapidapi
+    entrypoint: ["python"]
+    command: ["app.py"]
+    volumes:
+      - .:/src
