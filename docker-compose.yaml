@@ -4,10 +4,52 @@ x-rapiapi:
   image: 'rapidapi:latest'
   environment:
     - API_KEY=myapikey
+    - WDB_SOCKET_SERVER=wdb
+    - WDB_SOCKET_PORT=19840
+    - WDB_WEB_SERVER=localhost
+    - WDB_WEB_PORT=1984
+    - MONGO_HOST=mongodb
+    - MONGO_DB=rapidapi
+    - MONGO_USERNAME=mongouser
+    - MONGO_PSW=mongo123456
+x-tests:
+  &default-tests
+  image: 'rapidapi:latest'
+  environment:
+    - API_KEY=myapikey
+    - WDB_SOCKET_SERVER=wdb
+    - WDB_SOCKET_PORT=19840
+    - WDB_WEB_SERVER=localhost
+    - WDB_WEB_PORT=1984
+    - MONGO_HOST=mongodb
+    - MONGO_DB=rapidapi
+    - MONGO_USERNAME=mongouser
+    - MONGO_PSW=mongo123456
 services:
+  mongodb:
+    image: mongo:4.2.3
+    environment:
+    - MONGO_INITDB_ROOT_USERNAME=mongouser
+    - MONGO_INITDB_ROOT_PASSWORD=mongo123456
+    - MONGO_INITDB_DATABASE=rapidapi
+  wdb:
+    image: kozea/wdb:3.3.0
+    ports: ['1984:1984']
   rapidapi:
     <<: *default-rapidapi
     entrypoint: ["python"]
-    command: ["app.py"]
+    command: ["./rapidapi/app.py"]
     volumes:
       - .:/src
+    depends_on:
+      - wdb
+      - mongodb
+  tests:
+    <<: *default-tests
+    entrypoint: ["python"]
+    command: ["./rapidapi/tests.py"]
+    volumes:
+      - .:/src
+    depends_on:
+      - mongodb
+      - wdb
